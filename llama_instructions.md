@@ -1,3 +1,5 @@
+This repository was originally intended to be used with the Llama 2 architecture. These are Llama 2 specific instructions.
+
 #### Using Original Llama 2 Tokenizer
 
 To obtain the original Llama 2 Tokenizer, [Request access for Llama 2](https://ai.meta.com/resources/models-and-libraries/llama-downloads/).
