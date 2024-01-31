@@ -1,6 +1,18 @@
-# Rocket
+# Rocket-Launch
 
-Rocket is a modified version of the Llama 2 architecture, implemented through PyTorch Lightning to easily enable distributed training on a number of configurations.
+Rocket-Launch is a generalized version of the Rocket framework. Rocket-Launch can use any HuggingFace model, is capable of using any HuggingFace dataset, and utilizes PyTorch Lightning to easily enable distributed training on a number of configurations. Rocket-Launch is designed to be a flexible research framework with the ability to:
+
+- Finetune on any dataset.
+- Train from scratch on any dataset.
+- Enable users to modify low-level model code and architecture
+- Scale up to large models with distributed training.
+
+Rocket-Launch primarily uses HuggingFace and PyTorch Lightning to achieve these abilities. The user is encouraged to understand these tools. In short:
+
+- HuggingFace easily provides a wide range of models and datasets to use.
+- PyTorch Lightning enables high-performance distributed training, as well as great flexibility in training code setup for a variety of needs.
+
+This repository assumes you are running the code on a Slurm-enabled supercomputing infrastructure, but this is not necessary.
 
 ## Project Structure
 
@@ -8,18 +20,18 @@ This repository consists of:
 
 - **configs**: the configuration folder holding all configs for use in training, data preparation, and evaluation.
 - **dataset**: the dataset folder should store all raw and tokenized data, as well as tokenizers.
+- **data_setup**: contains scripts for downloading data, most notably from the HuggingFace Hub
 - **runs**: contains all results from training and evaluation jobs.
 - **slurm**: slurm scripts for various tasks.
 - **tokenizer**: various scripts pertaining to tokenization, as well as the core tokenizer class in [tokenizer.py](./tokenizer/tokenizer.py).
 - **utils**: various utils.
 - **dataset.py**: containing PyTorch Lightning DataModule class and DataSet class. These classes should be modified for specific use cases.
-- **inference.py**: Script for running inference, given a configuration.
-- **llama.py**: Core LightningModule class for Llama.
-- **model.py**: Model code for Llama.
-- **orca_data_setup.py**: Setup script specifically constructed for obtaining and formatting OpenOrca data for training.
-- **hf_data_setup.py**: Setup script for downloading data from the HuggingFace Hub.
-- **tokenize_data.py**: Tokenizes data found in corresponding path in given config.
-- **train.py**: Training script.
+- **generation.py**: script for generating from trained model.
+- **inference.py**: script for running inference data on given metrics or benchmarks.
+- **llama.py**: core LightningModule class for Llama.
+- **model.py**: model code for Llama.
+- **tokenize_data.py**: tokenizes data found in corresponding path in given config.
+- **train.py**: training script.
 
 ## Workflow
 
@@ -29,6 +41,7 @@ A general workflow for this repository involves:
 - Training a tokenizer on the data.
 - Tokenizing the data with this tokenizer, and saving to the data directory.
 - Training a model on the tokenized data.
+- Running inference and/or generation with the trained model.
 
 ## Setting up Rocket Llama
 
@@ -43,12 +56,17 @@ Run ```pip install -r requirements.txt```.
 
 ### Setting up a Config
 
-Configuration YAML (Yet Another Markdown Language) files are used to define all paths, settings, and hyperparameters for training tokenizers, tokenizing data, training models, and running inference on models. In the config folder, you can create a new config by copying default_config.yaml. Fill out the class parameters accordingly.
+Configuration YAML (YAML Ain't Markup Language) files are used to define all paths, settings, and hyperparameters for training tokenizers, tokenizing data, training models, and running inference on models. In the config folder, you can create a new config by copying default_config.yaml, preferebly into the [user_configs](./configs/user_configs/) folder. Fill out the class parameters accordingly.
 
 - Any paths relating to the dataset or checkpoints should be in a directory with plenty of storage
-- It's preferable to use absolute paths in the config.
+- It's recommended to use absolute paths in the config.
+- This repository is setup to work flexibly with any desired directory structure.
 - This repository is setup to work flexibly with any dataset source. If retrieving datasets from the HuggingFace Hub, define the parameters to match.
-- You may define paths for either one single dataset path, or seperate paths for train/test/eval dataset paths.
+- You may define paths for either one single dataset path, or seperate paths for train/test/eval dataset paths, depending on the form of the data.
+
+### Setting up Slurm scripts
+
+With the exception of downloading data, all steps in the pipeline are designed to be run through Slurm processes. The [slurm](./slurm/) folder contains default Slurm scripts for many steps in the pipeline. It is recommended to copy all necessary Slurm scripts into the [user_slurm](./slurm/user_slurm/) folder. Before running any Slurm script, edit the configuration to work for your usage. Ensure you are activating the right Mamba environment in the script, and that the correct config path is given.
 
 ### Getting Data
 
@@ -62,10 +80,9 @@ To download datasets from the HuggingFace Hub, run [hf_data_setup.py](./hf_data_
 
 ### Preparing Tokenizer
 
-Llama is designed to use [SentencePiece](https://github.com/google/sentencepiece). To prepare the tokenizer, you can either:
+This repository is designed to work with either HuggingFace tokenizers or SentencePiece tokenizers.
 
-- Train a new tokenizer from scratch based on your data.
-- Use the original Llama 2 tokenizer trained by Meta.
+#### Retrieiving or Training HuggingFace tokenizers
 
 #### Training SentencePiece Tokenizer from scratch
 
@@ -84,22 +101,6 @@ You can find further information on training arguments in the SentencePiece docu
 - [SentencePiece Repository](https://github.com/google/sentencepiece)
 - [Training options](https://github.com/google/sentencepiece/blob/master/doc/options.md)
 
-#### Using Original Llama 2 Tokenizer
-
-To obtain the original Llama 2 Tokenizer, [Request access for Llama 2](https://ai.meta.com/resources/models-and-libraries/llama-downloads/).
-
-Clone the [repository](https://github.com/facebookresearch/llama).
-
-When download link has been obtained via email, run `./download.sh` in the llama repo.
-
-When asked, paste the url sent to your email.
-
-Once downloaded, move tokenizer.model into Tokenizers folder of Rocket repo.
-
-Move dataset file(s) into `/Dataset/raw`
-
-The tokenizer being used utilizes sentencepiece. By default, sentencepiece uses -1 as the id for padding tokens, meaning padding is disabled by default. This causes problems if you want to use a padding token. To add a new token representing padding, you can run [add_tokens.py](./tokenizer/add_tokens.py) after putting the string `<pad>` into the special_tokens list; this should already be present. Additionally, you will need to specify the path to the tokenzier within this script. The new tokenizer will have the additional padding token. Then, in [tokenizer.py](./tokenizer/tokenizer.py), ensure that `pad_id` in the tokenizer class is set to the string you defined for padding, rather than the SentencePieceProcessor `pad_id`.
-
 ### Tokenizing data
 
 To tokenize data, you will first want to create a new tokenization script. [wikitext_tokenization.py](./tokenizer/wikitext_tokenization.py) and [orca_tokenization.py](./tokenizer/orca_tokenization.py) provide good examples. How you tokenize is highly dependent on the data and it's structure.
@@ -113,9 +114,10 @@ Then, submit the job:
 
 [tokenize_data.py](./tokenize_data.py) will tokenize the given data files as defined in the config yaml file, according to the tokenizer path given. This script expects raw data to be in parquet file format by default, but this could be changed.
 
-
 ## Training
 
 Before training, it may be desirable change the dataset processing in [dataset.py](./dataset.py). By default, the dataset class is padding each sequence in the batch. The best processing method is highly dependent on the data.
 
 The [train.py](./train.py) takes as an argument a path to a config yaml file. There is a slurm script, [run_train.sh](./slurm/run_train.sh) that calls this script. Edit the slurm script to use your config file, and training will begin when ran.
+
+## Inference
