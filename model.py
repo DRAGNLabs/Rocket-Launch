@@ -50,7 +50,6 @@ class Model(LightningModule):
         #with autocast(): # autocast is torch package for running in mixed precision, which improves performance
         #y_hat = self.model(x)
         output = self.model(input_ids=x, attention_mask=x_mask, labels=y_true)
-        #TODO: trying to compute loss only on the response portion, conditioned on the prompt
 
         #loss = self.criterion(y_hat, y_true)
         loss = output.loss
