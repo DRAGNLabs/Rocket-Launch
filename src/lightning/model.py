@@ -7,14 +7,12 @@ from transformers import (
     LlamaConfig as HFConfig
 )
 
-from tokenizer.tokenizer import Tokenizer
-
 # Use a lower precision for better performance
 torch.set_float32_matmul_precision('medium')
 
 class Model(LightningModule):
     def __init__(self,
-                 tokenizer: Tokenizer, 
+                 tokenizer, 
                  config: dict = None):
         super().__init__()
 

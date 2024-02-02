@@ -1,7 +1,6 @@
 import sentencepiece as sp
 from sentencepiece import sentencepiece_model_pb2 as model
 
-
 def add_tokens(file_path, new_tokens):
     """
     Add tokens to tokenizer dict

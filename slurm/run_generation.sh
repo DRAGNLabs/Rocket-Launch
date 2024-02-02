@@ -15,4 +15,4 @@ export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE
 # LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
 nvidia-smi
 mamba activate rocket
-python3 ../generation.py ../configs/PATH_TO_CONFIG.yaml
+python3 ../src/generation.py ../configs/PATH_TO_CONFIG.yaml

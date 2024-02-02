@@ -6,4 +6,5 @@
 * Add better logging. Tensorboard?
 * Cleanup YAML
 * cleanup/organize code
+* Test loading/training pretrained model
 * Test

@@ -16,4 +16,4 @@ export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE
 # LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
 nvidia-smi
 mamba activate YOUR_ENVIRONMENT_HERE # Activate your own mamba environment here
-srun python3 ../train.py ../configs/PATH_TO_CONFIG.yaml
+srun python3 ../src/train.py ../configs/PATH_TO_CONFIG.yaml
