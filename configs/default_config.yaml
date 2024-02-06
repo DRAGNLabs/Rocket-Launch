@@ -1,5 +1,6 @@
 # Tokenizer
 # These paths are used to save the tokenizer and vocab. Name accordingly.
+tokenizer_type: hf # options: 'hf', 'sp'
 tokenizer_path: PATH/TO/REPO/compute/dataset/tokenizers/tokenizer.model
 vocab_path:  PATH/TO/REPO/compute/dataset/tokenizers/tokenizer.vocab
 pad_id: -1 # defined later by tokenizer. NOTE: padding is disabled by default, see tokenizer.py

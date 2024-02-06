@@ -35,10 +35,10 @@ This repository consists of:
 
 ## Workflow
 
-A general workflow for this repository involves:
+There are a variety of workflow approaches for a framework such as this. In general, a workflow for this repository involves:
 
 - Downloading a dataset to a data directory.
-- Training a tokenizer on the data.
+- Training a tokenizer on the data, or using a pretrained tokenizer.
 - Tokenizing the data with this tokenizer, and saving to the data directory.
 - Training a model on the tokenized data.
 - Running inference and/or generation with the trained model.
@@ -70,49 +70,15 @@ With the exception of downloading data, all steps in the pipeline are designed t
 
 ### Getting Data
 
-#### HuggingFace
-
-To download datasets from the HuggingFace Hub, run [hf_data_setup.py](./hf_data_setup.py), passing in the path to your desired config file as a parameter. This will save the HF dataset as a parquet file in the given data folder.
-
-#### OpenOrca
-
-[OpenOrca](https://huggingface.co/datasets/Open-Orca/OpenOrca) is a logic and reasoning dataset. To obtain the OpenOrca data, run [orca_data_setup.py](./orca_data_setup.py). This will download two parquet files into your dataset folder. The script will then consolidate both parquet files into a single parquet file(for training), as well as a csv file(for training the tokenizer).
+This repository can ideally be utilized with any datasource, but it is specifically setup to use datasets from HuggingFace. See [Getting Data](./docs/Getting_Data.md) for more information.
 
 ### Preparing Tokenizer
 
-This repository is designed to work with either HuggingFace tokenizers or SentencePiece tokenizers.
-
-#### Retrieiving or Training HuggingFace tokenizers
-
-#### Training SentencePiece Tokenizer from scratch
-
-A SentencePiece tokenizer can be trained by running [train_tokenizer.sh](./slurm/train_tokenizer.sh). This script is simply a wrapper for the SentencePiece python module; it seems easier than building and installing SentencePiece from source. Pass in all arguments in quotations, ex:
-
-```python3 train_tokenizer.py "--input=../dataset/raw/openorca_combined.csv --input_format=text --input_sentence_size=1000000 --train_extremely_large_corpus=true --model_prefix=tokenizer --vocab_size=32000 --shuffle_input_sentence=true --pad_id=3""```
-
-You can adjust the vocabularly size with `--vocab_size`.
-
-You will want to verify that the [Tokenizer](./tokenizer/tokenizer.py) class is using ```.pad_id()``` as opposed to a custom pad string, i.e. "['<pad>']".
-
-Then, submit the job:
-```sbatch train_tokenizer.sh```
-
-You can find further information on training arguments in the SentencePiece documentation: 
-- [SentencePiece Repository](https://github.com/google/sentencepiece)
-- [Training options](https://github.com/google/sentencepiece/blob/master/doc/options.md)
+This repository is designed to work with either HuggingFace tokenizers or SentencePiece tokenizers. See the respective documentation for [HuggingFace](./docs/Training_HF_Tokenizer.md) and [SentencePiece](./docs/Training_SP_Tokenizer.md) tokenizers for more information.
 
 ### Tokenizing data
 
-To tokenize data, you will first want to create a new tokenization script. [wikitext_tokenization.py](./tokenizer/wikitext_tokenization.py) and [orca_tokenization.py](./tokenizer/orca_tokenization.py) provide good examples. How you tokenize is highly dependent on the data and it's structure.
-
-Once you have the desired tokenization script, edit the import statement in [tokenizer_data.py](./tokenize_data.py) so that the correct tokenization script is being used.
-
-Ensure that the correct tokenizer you wish to use is specified in the config file. Navigate to [tokenize_data.sh](./slurm/tokenize_data.sh) and verify that your desired config file is being passed as a parameter in the script. 
-
-Then, submit the job:
-```sbatch tokenize_data.sh```
-
-[tokenize_data.py](./tokenize_data.py) will tokenize the given data files as defined in the config yaml file, according to the tokenizer path given. This script expects raw data to be in parquet file format by default, but this could be changed.
+There are a number of methods for tokenizing data: it can be done in the preprocessing stage, or dynamically during training. See the docs on [tokenizing data](./docs/Tokenizing_Data.md) for more information.
 
 ## Training
 
@@ -121,3 +87,5 @@ Before training, it may be desirable change the dataset processing in [dataset.p
 The [train.py](./train.py) takes as an argument a path to a config yaml file. There is a slurm script, [run_train.sh](./slurm/run_train.sh) that calls this script. Edit the slurm script to use your config file, and training will begin when ran.
 
 ## Inference
+
+There are two scripts for inference: [generation.py](./src/generation.py), for generating text, and [inference.py](./src/inference.py), for running on a test set and computing metrics.
