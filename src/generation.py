@@ -5,11 +5,13 @@ import os
 import torch
 from typing import List
 
-from model import Model
-from tokenizer.tokenizer import Tokenizer
+from lightning.model import Model
+from transformers import PreTrainedTokenizerFast as HFTokenizer
+from sp_tokenizer.tokenizer import Tokenizer as SPTokenizer
 from utils.data_utils import Struct
 
 device = torch.device('cuda:0' if 'CUDA_VISIBLE_DEVICES' in os.environ else 'cpu')
+
 
 def generate(
     model,
@@ -21,7 +23,11 @@ def generate(
     repetition_penalty: float = 1.0,
 ) -> List[str]:
     
-    prompt_tokens = torch.tensor(tokenizer.encode(prompt, bos=True, eos=False)).reshape(1,-1)
+    if isinstance(tokenizer, SPTokenizer):
+        prompt_tokens = torch.tensor(tokenizer.encode(prompt, bos=True, eos=False)).reshape(1,-1)
+    elif isinstance(tokenizer, HFTokenizer):
+        prompt_tokens = tokenizer.encode(prompt, return_tensors="pt")
+    
     generate_ids = model.generate(prompt_tokens.to(device), 
                                   max_length=max_gen_len, 
                                   temperature=temperature, 
@@ -29,15 +35,25 @@ def generate(
                                   repetition_penalty=repetition_penalty, 
                                   do_sample=True)
     generate_tokens = generate_ids.tolist()
-    decoded = tokenizer.decode(generate_tokens)
+    print(generate_tokens)
+
+    if isinstance(tokenizer, SPTokenizer):
+        decoded = tokenizer.decode(generate_tokens)
+    elif isinstance(tokenizer, HFTokenizer):
+        decoded = tokenizer.decode(generate_tokens[0], skip_special_tokens=True)
+
     return decoded
 
 def generation(config):
     print('Beginning Inference')
     
-    tokenizer = Tokenizer(model_path=config.tokenizer_path)  # including this for the special tokens (i.e. pad)
-    config.vocab_size = tokenizer.n_words
-    config.pad_id = tokenizer.pad_id
+    if config.tokenizer_type == 'hf':
+        tokenizer = HFTokenizer.from_pretrained(config.tokenizer_path)
+        config.pad_id = tokenizer.pad_token_id
+    elif config.tokenizer_type == 'sp':
+        tokenizer = SPTokenizer(config.tokenizer_path) 
+        config.vocab_size = tokenizer.n_words
+        config.pad_id = tokenizer.pad_id
 
     # Build model class
     model = Model(tokenizer=tokenizer, config=config)
