@@ -89,3 +89,5 @@ The [train.py](./train.py) takes as an argument a path to a config yaml file. Th
 ## Inference
 
 There are two scripts for inference: [generation.py](./src/generation.py), for generating text, and [inference.py](./src/inference.py), for running on a test set and computing metrics.
+
+## Modifying Models

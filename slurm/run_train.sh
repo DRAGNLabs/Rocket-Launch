@@ -6,7 +6,7 @@
 #SBATCH --mem=512G   # memory per CPU core
 #SBATCH --gres=gpu:8
 #SBATCH --qos=dw87
-#SBATCH -J "train_llama"   # job name
+#SBATCH -J "run_train"   # job name
 #SBATCH --requeue
 #SBATCH --signal=SIGHUP@90
 #SBATCH --output=%x_%j.out

@@ -6,7 +6,7 @@
 #SBATCH --mem-per-cpu=128G   # memory per CPU core
 #SBATCH --gpus=1
 #SBATCH --qos=cs
-#SBATCH -J "llama_generate"   # job name
+#SBATCH -J "generate"   # job name
 #SBATCH --output=%x_%j.out
 
 # Set the max number of threads to use for programs using OpenMP. Should be <= ppn. Does nothing if the program doesn't use OpenMP.
