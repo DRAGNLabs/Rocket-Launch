@@ -1,64 +1,68 @@
+from pathlib import Path
 import sys
 import yaml
 
 from tokenizers import Tokenizer
 from tokenizers.models import BPE
 from tokenizers.trainers import BpeTrainer
-from tokenizers.pre_tokenizers import Whitespace
-from tokenizers.processors import TemplateProcessing
-from utils.data_utils import Struct # TODO: this might break
+from tokenizers import pre_tokenizers
+from tokenizers import processors
+from utils.data_utils import Struct
+
+from transformers import PreTrainedTokenizerFast
+from tokenizers import decoders
 
 def main(config: Struct):
     tokenizer = Tokenizer(BPE(unk_token="<unk>"))
+
+    if config.vocab_size <= 0:
+        raise ValueError("Configuration parameter 'vocab_size' must be defined in order to train HF tokenizer.")
+
     trainer = BpeTrainer(
         vocab_size=config.vocab_size,
         show_progress=True,
-        special_tokens=["<pad>", "<bos>", "<unk>"])
+        special_tokens=["<pad>", "<bos>", "<unk>", "<eos>"])
     
-    tokenizer.pre_tokenizer = Whitespace()
+    tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
 
+    print('Beginning training of tokenizer...')
     if config.raw_dataset_path is None:
-        tokenizer.train(config.raw_train_path, trainer)
+        tokenizer.train([config.raw_train_path], trainer)
     else:
-        tokenizer.train(config.raw_dataset_path, trainer)
+        tokenizer.train([config.raw_dataset_path], trainer)
 
-    # trim_offsets=False tells post-processor to keep spaces as part of tokens
-    tokenizer.post_processor = TemplateProcessing(
-        single="<bos> $A",
-        special_tokens=[("<bos>", tokenizer.token_to_id("<bos>"))],
-    )
+    tokenizer.post_processor = processors.ByteLevel(trim_offsets=False)
 
-    # Add decoder for converting tokens back to text
-    #tokenizer.decoder = decoders.ByteLevel()
+    tokenizer.decoder = decoders.ByteLevel()
 
-    # Enable padding
+    # # Enable padding
     # tokenizer.enable_padding(
     #     direction="right",
     #     pad_id=0,
     #     pad_token="<pad>",
-    #     length=config.seq_len + 1)
+    #     length=config.max_sequence_embeddings + 1)
 
     # Enable truncation
-    # tokenizer.enable_truncation(
-    #     max_length=config.seq_len + 1,
-    #     direction="right")
+    tokenizer.enable_truncation(
+        max_length=config.max_sequence_embeddings + 1,
+        direction="right")
 
     # Wrap tokenizer with transformers library
-    # tokenizer = PreTrainedTokenizerFast(
-    #     model_max_length=config.seq_len,
-    #     padding_side="right",
-    #     truncation_side="right",
-    #     bos_token="<bos>",
-    #     unk_token="<unk>",
-    #     pad_token="<pad>",
-    #     tokenizer_object=tokenizer)
+    tokenizer = PreTrainedTokenizerFast(
+        model_max_length=config.max_sequence_embeddings,
+        padding_side="right",
+        truncation_side="right",
+        bos_token="<bos>",
+        unk_token="<unk>",
+        pad_token="<pad>",
+        eos_token="<eos>",
+        tokenizer_object=tokenizer)
 
-    # # Save tokenizer to file
-    # tokenizer_save_path = Path(config.tokenizer_path)
-    # tokenizer_save_path.mkdir(parents=True, exist_ok=True)
-    # tokenizer.save_pretrained(tokenizer_save_path)
-    tokenizer.save(config.tokenizer_path)
-
+    # Save tokenizer to file
+    tokenizer_save_path = Path(config.tokenizer_path)
+    tokenizer_save_path.mkdir(parents=True, exist_ok=True)
+    tokenizer.save_pretrained(tokenizer_save_path)
+    print('Finished!')
 
 if __name__ == '__main__':
     args = sys.argv
