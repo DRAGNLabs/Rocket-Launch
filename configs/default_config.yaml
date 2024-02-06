@@ -3,7 +3,8 @@
 tokenizer_path: PATH/TO/REPO/compute/dataset/tokenizers/tokenizer.model
 vocab_path:  PATH/TO/REPO/compute/dataset/tokenizers/tokenizer.vocab
 pad_id: -1 # defined later by tokenizer. NOTE: padding is disabled by default, see tokenizer.py
-vocab_size: -1  # defined later by tokenizer
+# With SP, this is defined later by tokenizer. With HF, this must be defined.
+vocab_size: -1  
 
 # Paths
 # default_root_dir is the root model training directory; checkpoints, predictions, and logs will be saved here.
