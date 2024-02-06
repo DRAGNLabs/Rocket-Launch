@@ -26,10 +26,10 @@ def main(config: Struct):
     tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
 
     print('Beginning training of tokenizer...')
-    if config.raw_dataset_path is None:
+    if config.raw_train_path is not None:
         tokenizer.train([config.raw_train_path], trainer)
     else:
-        tokenizer.train([config.raw_dataset_path], trainer)
+        raise ValueError("Configuration parameter 'raw_train_path' must be defined in order to train HF tokenizer.")
 
     tokenizer.post_processor = processors.ByteLevel(trim_offsets=False)
 

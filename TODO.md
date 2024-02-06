@@ -1,5 +1,4 @@
 # TODO List
-* fix paths in all slurm scripts and configs
 * You should do split before any tokenization stuff, remove ability to have one single full data file
 * Explain pipeline in readme: tokenizer is trained, all the data is tokenized before trraining, and padding is added dynamically during training.
 * Lazy load data in dataset class
