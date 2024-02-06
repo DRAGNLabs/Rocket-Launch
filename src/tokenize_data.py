@@ -1,5 +1,3 @@
-# Change this to tokenization script you want to use
-from tokenizer import wikitext_tokenization as tokenizer
 from tqdm import tqdm
 import pandas as pd
 from pathlib import Path
@@ -7,6 +5,52 @@ import sys
 import yaml
 from utils.data_utils import Struct
 from sklearn.model_selection import train_test_split
+from transformers import PreTrainedTokenizerFast as HFTokenizer
+from sp_tokenizer.tokenizer import Tokenizer as SPTokenizer
+
+def tokenize_data_chunk(tokenizer, chunk):  
+    """
+    Tokenize a chunk of data using the given tokenizer.
+
+    This function is highly dependent on the structure of the input data, and the tokenizer being used.
+    """
+    to_tokenize:str = chunk['text']
+
+    if type(tokenizer) == HFTokenizer:
+        # Does not pad during pre processing, pads dynamically during training
+        result = tokenizer(to_tokenize, add_special_tokens=True, padding=False)
+        chunk['Tokenized_Data'] = result.input_ids
+    elif type(tokenizer) == SPTokenizer:
+        chunk['Tokenized_Data'] = tokenizer.encode(to_tokenize, bos=True, eos=True)
+
+    return chunk
+
+def generate_tokenized_file(raw_data_path, tokenizer_path, tokenizer_type):
+    """
+    Tokenizes a dataset, returning a DataFrame with the tokenized data.
+
+    This function is highly dependent on the structure of the input data, and the tokenizer being used.
+    """
+    # Load Dataset into pd.DataFrame
+    df:pd.DataFrame = pd.read_csv(raw_data_path, dtype=str, na_filter=False)
+    
+    # Load tokenizer
+    if tokenizer_type == 'hf':
+        tokenizer = HFTokenizer.from_pretrained(tokenizer_path)
+    elif tokenizer_type == 'sp':
+        tokenizer = SPTokenizer(tokenizer_path)
+    else:
+        raise ValueError(f"Tokenizer type '{tokenizer_type}' not recognized. Must be 'hf' or 'sp'.")
+
+    # Call 'tokenize_data_chunk' over entire file
+    tok_lambda = lambda x: tokenize_data_chunk(tokenizer=tokenizer, chunk=x)  # 'df.' of line 62 becomes 'x' in this lambda
+    print(f'Dataframe: {df}\n\n')
+    df1 = df.progress_apply(tok_lambda, axis=1)
+
+    # Drop the original raw text column
+    df1 = df1.drop(['text'], axis=1)
+    
+    return df1
 
 # To use: define raw_dataset_path and tokenized_dataset_path in config
 def main():
@@ -24,14 +68,10 @@ def main():
 
     # Tokenize one whole file, and then do train test split
     if config.raw_dataset_path:
-        raw_data = config.raw_dataset_path
-
-        # Load Dataset into pd.DataFrame
-        training_dataframe:pd.DataFrame = pd.read_csv(raw_data, dtype=str, na_filter=False)#.iloc[:25]
-        #training_dataframe:pd.DataFrame = pd.read_parquet(raw_data)
+        raw_data_path = config.raw_dataset_path
 
         # Generate tokenized file
-        tokenized_df:pd.DataFrame = tokenizer.generate_tokenized_file(training_dataframe, tokenizer_path=config.tokenizer_path)
+        tokenized_df:pd.DataFrame = generate_tokenized_file(raw_data_path, tokenizer_path=config.tokenizer_path, tokenizer_type=config.tokenizer_type)
 
         # Split into train/val/test 85/10/5
         train, test = train_test_split(tokenized_df, test_size=0.15, random_state=config.seed)
@@ -64,15 +104,10 @@ def main():
         raw_test = config.raw_test_path
         raw_val = config.raw_val_path
 
-        # Load Dataset into pd.DataFrame
-        training_dataframe:pd.DataFrame = pd.read_csv(raw_train, dtype=str, na_filter=False)
-        test_dataframe:pd.DataFrame = pd.read_csv(raw_test, dtype=str, na_filter=False)
-        val_dataframe:pd.DataFrame = pd.read_csv(raw_val, dtype=str, na_filter=False)
-
         # Generate tokenized file
-        tokenized_train:pd.DataFrame = tokenizer.generate_tokenized_file(training_dataframe, tokenizer_path=config.tokenizer_path)
-        tokenized_test:pd.DataFrame = tokenizer.generate_tokenized_file(test_dataframe, tokenizer_path=config.tokenizer_path)
-        tokenized_val:pd.DataFrame = tokenizer.generate_tokenized_file(val_dataframe, tokenizer_path=config.tokenizer_path)
+        tokenized_train:pd.DataFrame = generate_tokenized_file(raw_train, tokenizer_path=config.tokenizer_path, tokenizer_type=config.tokenizer_type)
+        tokenized_test:pd.DataFrame = generate_tokenized_file(raw_test, tokenizer_path=config.tokenizer_path, tokenizer_type=config.tokenizer_type)
+        tokenized_val:pd.DataFrame = generate_tokenized_file(raw_val, tokenizer_path=config.tokenizer_path, tokenizer_type=config.tokenizer_type)
 
         # Save train, validation, and test to pickle files
         out_dir_train = Path(config.train_path)
