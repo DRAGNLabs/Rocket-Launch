@@ -4,7 +4,6 @@ from pathlib import Path
 import sys
 import yaml
 from utils.data_utils import Struct
-from sklearn.model_selection import train_test_split
 from transformers import PreTrainedTokenizerFast as HFTokenizer
 from sp_tokenizer.tokenizer import Tokenizer as SPTokenizer
 
