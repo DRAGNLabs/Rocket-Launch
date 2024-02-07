@@ -1,9 +1,11 @@
 # Tokenizer
 # These paths are used to save the tokenizer and vocab. Name accordingly.
+tokenizer_type: hf # options: 'hf', 'sp'
 tokenizer_path: PATH/TO/REPO/compute/dataset/tokenizers/tokenizer.model
 vocab_path:  PATH/TO/REPO/compute/dataset/tokenizers/tokenizer.vocab
 pad_id: -1 # defined later by tokenizer. NOTE: padding is disabled by default, see tokenizer.py
-vocab_size: -1  # defined later by tokenizer
+# With SP, this is defined later by tokenizer. With HF, this must be defined.
+vocab_size: -1  
 
 # Paths
 # default_root_dir is the root model training directory; checkpoints, predictions, and logs will be saved here.
@@ -15,18 +17,23 @@ checkpoint_path: ~
 # Name of hf hub dataset repo, if being used. Leave blank if not : ~
 hf_dataset_name: wikitext
 hf_dataset_config: wikitext-2-v1
-dataset_directory:  PATH/TO/REPO/compute/dataset/raw/wikitext
 
-# Raw data file. Tokenizer expects parquet, could be changed.
-raw_dataset_path: PATH/TO/REPO/compute/dataset/raw/openorca_combined.parquet
+# Directory where raw data is stored
+dataset_directory:  PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME
 
-# Alternatively, raw paths for train/test/val if they came split
-raw_train_path: PATH/TO/REPO/compute/dataset/raw/wikitext/train.parquet
-raw_test_path: PATH/TO/REPO/compute/dataset/raw/wikitext/test.parquet
-raw_val_path: PATH/TO/REPO/compute/dataset/raw/wikitext/validation.parquet
+# You may need to change filenames here if data came with split
+raw_train_path: PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME/train.csv
+raw_val_path: PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME/validation.csv
+raw_test_path: PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME/test.csv
 
 # Full tokenized data file, not necessary. Must be .pkl file
 tokenized_dataset_path: PATH/TO/REPO/compute/dataset/tokenized/full_tokenized.pkl
+
+# Train/validation/test split proportions
+splits:
+  - 0.7
+  - 0.2
+  - 0.1
 
 # Dataset split, must be .pkl file
 train_path: PATH/TO/REPO/compute/dataset/tokenized/train.pkl

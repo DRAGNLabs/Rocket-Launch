@@ -7,14 +7,12 @@ from transformers import (
     LlamaConfig as HFConfig
 )
 
-from tokenizer.tokenizer import Tokenizer
-
 # Use a lower precision for better performance
 torch.set_float32_matmul_precision('medium')
 
 class Model(LightningModule):
     def __init__(self,
-                 tokenizer: Tokenizer, 
+                 tokenizer, 
                  config: dict = None):
         super().__init__()
 
@@ -113,5 +111,5 @@ class Model(LightningModule):
     
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.config.lr)  # model.paramaters = weights tensor
-        #lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, self.config.gamma)
-        return [optimizer]#, [lr_scheduler]
+        lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, self.config.gamma)
+        return [optimizer], [lr_scheduler]

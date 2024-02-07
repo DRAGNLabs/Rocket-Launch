@@ -8,7 +8,7 @@ from pytorch_lightning import LightningDataModule
 #import dask.dataframe as dd
 
 class DataModule(LightningDataModule):
-    def __init__(self, train_path, val_path, tokenizer, batch_size, max_sequence_embeddings, num_workers=0):
+    def __init__(self, train_path, val_path, tokenizer, batch_size, max_sequence_embeddings, tokenizer_type, num_workers=0):
         super().__init__()
         self.train_path = train_path
         self.val_path = val_path
@@ -16,17 +16,28 @@ class DataModule(LightningDataModule):
         self.batch_size = batch_size
         self.max_sequence_embeddings = max_sequence_embeddings
         self.num_workers = num_workers
+        if tokenizer_type == 'hf':
+            self.pad_id = tokenizer.pad_token_id
+            self.bos_id = tokenizer.bos_token_id
+            self.eos_id = tokenizer.eos_token_id
+        elif tokenizer_type == 'sp':
+            self.pad_id = tokenizer.pad_id
+            self.bos_id = tokenizer.bos_id
+            self.eos_id = tokenizer.eos_id
+        else:
+            raise ValueError(f"Tokenizer type '{tokenizer_type}' not recognized. Must be 'hf' or 'sp'.")
+
     
     def setup(self, stage: Optional[str] = None):
         self.train_dataset = DataSet(self.train_path, 
-                                            pad_tok=self.tokenizer.pad_id, 
-                                            bos_tok=self.tokenizer.bos_id, 
-                                            eos_tok=self.tokenizer.eos_id, 
+                                            pad_tok=self.pad_id, 
+                                            bos_tok=self.bos_id, 
+                                            eos_tok=self.eos_id, 
                                             max_sequence_embeddings=self.max_sequence_embeddings)
         self.val_dataset = DataSet(self.val_path, 
-                                            pad_tok=self.tokenizer.pad_id, 
-                                            bos_tok=self.tokenizer.bos_id, 
-                                            eos_tok=self.tokenizer.eos_id, 
+                                            pad_tok=self.pad_id, 
+                                            bos_tok=self.bos_id, 
+                                            eos_tok=self.eos_id, 
                                             max_sequence_embeddings=self.max_sequence_embeddings)
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size = self.batch_size, shuffle=True, collate_fn=self.train_dataset.pad_to_longest, num_workers=self.num_workers, pin_memory=True)

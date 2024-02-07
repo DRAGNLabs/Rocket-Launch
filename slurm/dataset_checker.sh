@@ -16,4 +16,4 @@ export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE
 # LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
 nvidia-smi
 mamba activate rocket
-srun python3 ../dataset_checker.py ../configs/PATH_TO_CONFIG.yaml
+srun python3 ../src/utils/dataset_checker.py ../configs/PATH_TO_CONFIG.yaml

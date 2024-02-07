@@ -8,9 +8,10 @@ from pytorch_lightning.plugins.environments import SLURMEnvironment
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, Callback
 from pytorch_lightning.loggers import CSVLogger
 
-from dataset import DataModule
-from tokenizer.tokenizer import Tokenizer
-from model import Model
+from lightning.dataset import DataModule
+from transformers import PreTrainedTokenizerFast as HFTokenizer
+from sp_tokenizer.tokenizer import Tokenizer as SPTokenizer
+from lightning.model import Model
 from utils.data_utils import Struct
 
 torch.set_float32_matmul_precision('medium')
@@ -23,9 +24,17 @@ class PrintCallback(Callback):
 
 def train(config):
     seed_everything(config.seed, workers=True)
-    tokenizer = Tokenizer(model_path=config.tokenizer_path)
-    config.vocab_size = tokenizer.n_words
-    config.pad_id = tokenizer.pad_id
+
+    # Load tokenizer
+    if config.tokenizer_type == 'hf':
+        tokenizer = HFTokenizer.from_pretrained(config.tokenizer_path)
+        config.pad_id = tokenizer.pad_token_id
+    elif config.tokenizer_type == 'sp':
+        tokenizer = SPTokenizer(config.tokenizer_path)
+        config.vocab_size = tokenizer.n_words
+        config.pad_id = tokenizer.pad_id
+    else:
+        raise ValueError(f"Tokenizer type '{config.tokenizer_type}' not recognized. Must be 'hf' or 'sp'.")
 
     # Build model class
     model = Model(tokenizer=tokenizer, 
@@ -35,7 +44,8 @@ def train(config):
                     config.val_path, 
                     tokenizer, 
                     config.batch_size, 
-                    config.max_sequence_embeddings)
+                    config.max_sequence_embeddings,
+                    config.tokenizer_type)
 
     # callbacks
     early_stopping = EarlyStopping('val_loss', patience=config.early_stopping, mode='min', verbose=True)
