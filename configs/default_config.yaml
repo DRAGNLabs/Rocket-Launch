@@ -39,6 +39,7 @@ use_slurm: true
 accelerator: gpu
 num_nodes: 1
 devices: 8
+num_workers: 0
 
 # Train
 gradient_accumulation_steps: 1
