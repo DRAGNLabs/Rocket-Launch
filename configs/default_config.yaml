@@ -18,16 +18,10 @@ checkpoint_path: ~
 hf_dataset_name: wikitext
 hf_dataset_config: wikitext-2-v1
 
-# Directory where raw data is stored
-dataset_directory:  PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME
-
 # You may need to change filenames here if data came with split
 raw_train_path: PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME/train.csv
 raw_val_path: PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME/validation.csv
 raw_test_path: PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME/test.csv
-
-# Full tokenized data file, not necessary. Must be .pkl file
-tokenized_dataset_path: PATH/TO/REPO/compute/dataset/tokenized/full_tokenized.pkl
 
 # Train/validation/test split proportions
 splits:
