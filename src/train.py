@@ -6,7 +6,7 @@ import torch
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.plugins.environments import SLURMEnvironment
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, Callback
-from pytorch_lightning.loggers import CSVLogger
+from pytorch_lightning.loggers import CSVLogger, TensorBoardLogger
 from lightning.dataset import DataModule
 
 from transformers import PreTrainedTokenizerFast as HFTokenizer
@@ -49,7 +49,8 @@ def train(config):
 
     # callbacks
     early_stopping = EarlyStopping('val_loss', patience=config.early_stopping, mode='min', verbose=True)
-    logger = CSVLogger(save_dir=config.default_root_dir, name='logs')
+    csv_logger = CSVLogger(save_dir=config.default_root_dir, name='csv_logs')
+    tb_logger = TensorBoardLogger(save_dir=config.default_root_dir, name='tb_logs')
     model_checkpoint = ModelCheckpoint(
         dirpath=config.default_root_dir + '/checkpoints',
         filename='model-{epoch}-{val_loss:.2f}',
@@ -70,7 +71,7 @@ def train(config):
             accumulate_grad_batches=config.gradient_accumulation_steps,
             sync_batchnorm=True,
             callbacks=[early_stopping, print_callback, model_checkpoint],
-            logger=logger
+            logger=[csv_logger,tb_logger]
             )
     else:
         trainer = Trainer(
@@ -87,7 +88,7 @@ def train(config):
             sync_batchnorm=True,
             plugins=[SLURMEnvironment(requeue_signal=signal.SIGHUP)],
             callbacks=[early_stopping, print_callback, model_checkpoint],
-            logger=logger
+            logger=[csv_logger,tb_logger]
             )
         
     trainer.fit(model, datamodule=dm)

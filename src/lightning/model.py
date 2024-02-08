@@ -82,6 +82,7 @@ class Model(LightningModule):
         loss = output.loss
 
         self.log('test_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        
         return loss
 
     def on_validation_epoch_end(self) -> None:
