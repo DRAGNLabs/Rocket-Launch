@@ -1,9 +1,10 @@
 import sentencepiece as spm
+import shutil
 import sys
 from pathlib import Path
 import yaml
+
 from utils.data_utils import Struct
-import shutil
 
 # This script is basically just a wrapper for the SentencePiece python module: https://github.com/google/sentencepiece/blob/master/README.md
 # Call this script with all arguments in quotations, ex:
@@ -31,7 +32,6 @@ def main():
 
     for file in Path().glob('*.vocab'):
         shutil.move(str(file), config.vocab_path)
-
 
 if __name__ == '__main__':
     main()

@@ -6,6 +6,11 @@ from dataset import DataSet
 from torch.utils.data import DataLoader
 
 def main():
+    """
+    Loads a dataset and prints the memory usage of the dataframe
+
+    Outdated
+    """
     args = sys.argv
     config_path = args[1]
 

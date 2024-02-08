@@ -1,11 +1,13 @@
-from tqdm import tqdm
 import pandas as pd
 from pathlib import Path
 import sys
+from tqdm import tqdm
 import yaml
-from utils.data_utils import Struct
+
 from transformers import PreTrainedTokenizerFast as HFTokenizer
+
 from sp_tokenizer.tokenizer import Tokenizer as SPTokenizer
+from utils.data_utils import Struct
 
 def tokenize_data_chunk(tokenizer, chunk):  
     """

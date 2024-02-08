@@ -2,15 +2,12 @@ from pathlib import Path
 import sys
 import yaml
 
-from tokenizers import Tokenizer
+from transformers import PreTrainedTokenizerFast
+from tokenizers import Tokenizer, pre_tokenizers, processors, decoders
 from tokenizers.models import BPE
 from tokenizers.trainers import BpeTrainer
-from tokenizers import pre_tokenizers
-from tokenizers import processors
-from utils.data_utils import Struct
 
-from transformers import PreTrainedTokenizerFast
-from tokenizers import decoders
+from utils.data_utils import Struct
 
 def main(config: Struct):
     tokenizer = Tokenizer(BPE(unk_token="<unk>"))

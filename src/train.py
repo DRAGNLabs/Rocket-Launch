@@ -7,8 +7,8 @@ from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.plugins.environments import SLURMEnvironment
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, Callback
 from pytorch_lightning.loggers import CSVLogger
-
 from lightning.dataset import DataModule
+
 from transformers import PreTrainedTokenizerFast as HFTokenizer
 from sp_tokenizer.tokenizer import Tokenizer as SPTokenizer
 from lightning.model import Model

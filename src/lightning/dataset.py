@@ -1,11 +1,10 @@
-import torch
 import os
+
 import pandas as pd
-from typing import List, Optional
+import torch
 from torch.utils.data import DataLoader
-from torch.nn.utils.rnn import pad_sequence
+from typing import List, Optional
 from pytorch_lightning import LightningDataModule
-#import dask.dataframe as dd
 
 class DataModule(LightningDataModule):
     def __init__(self, train_path, val_path, tokenizer, batch_size, max_sequence_embeddings, tokenizer_type, num_workers=0):

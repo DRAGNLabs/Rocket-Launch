@@ -1,6 +1,6 @@
 import os
-import subprocess
 import pandas as pd
+import subprocess
 
 def download_dataset():
     print(f'\n\nDownloading dataset')

@@ -1,9 +1,8 @@
-import datasets
-from datasets import load_dataset
-from datasets import DatasetDict
+from pathlib import Path
 import sys
 import yaml
-from pathlib import Path
+
+import datasets
 
 def download(config):
     """
@@ -18,7 +17,7 @@ def download(config):
 
     # Use split='all' to get all data and split yourself
     # Otherwise, datasets often come with a train, test, and validation split
-    dataset = load_dataset(
+    dataset = datasets.load_dataset(
         config.hf_dataset_name, 
         name=config.hf_dataset_config, 
         #split='all'
@@ -35,7 +34,7 @@ def download(config):
             validation_test = train_validation["test"].train_test_split(
                 train_size=config.splits[1] / (config.splits[1] + config.splits[2]),
                 seed=config.seed)
-            dataset = DatasetDict({
+            dataset = datasets.dataset_dict.DatasetDict({
                 "train": train_validation["train"],
                 "validation": validation_test["train"],
                 "test": validation_test["test"]})
@@ -69,4 +68,3 @@ if __name__ == '__main__':
     # Convert args dict to object
     config = Struct(**config)
     download(config)
-

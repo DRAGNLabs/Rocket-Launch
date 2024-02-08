@@ -1,7 +1,7 @@
-import torch
-import torch.nn.functional as F
-from pytorch_lightning import LightningModule
 from pathlib import Path
+
+import torch
+from pytorch_lightning import LightningModule
 from transformers import (
     LlamaForCausalLM as LanguageModel, 
     LlamaConfig as HFConfig
