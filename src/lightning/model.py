@@ -48,8 +48,6 @@ class Model(LightningModule):
 
         loss = output.loss
 
-        loss = loss/self.config.gradient_accumulation_steps
-
         self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
         return loss
 
@@ -76,7 +74,15 @@ class Model(LightningModule):
             
         return val_loss
     
-    # TODO: add test function
+    def test_step(self, batch, batch_idx):
+        x, x_mask, y_true = batch
+
+        output = self.model(input_ids=x, attention_mask=x_mask, labels=y_true)
+
+        loss = output.loss
+
+        self.log('test_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        return loss
 
     def on_validation_epoch_end(self) -> None:
         if self.config.save_predictions_during_training == True:
