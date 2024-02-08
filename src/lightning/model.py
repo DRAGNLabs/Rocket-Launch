@@ -7,6 +7,9 @@ from transformers import (
     LlamaConfig as HFConfig
 )
 
+from nltk.translate.chrf_score import corpus_chrf
+from nltk.translate.bleu_score import corpus_bleu
+
 # Use a lower precision for better performance
 torch.set_float32_matmul_precision('medium')
 
@@ -19,6 +22,7 @@ class Model(LightningModule):
         self.config = config
         self.tokenizer = tokenizer
 
+        # Load model here
         if config.from_pretrained is not True:
             # * Configure necessary HF model parameters here
             model_config = HFConfig(
@@ -44,17 +48,29 @@ class Model(LightningModule):
     def training_step(self, batch, batch_idx):
         x, x_mask, y_true = batch
 
-        output = self.model(input_ids=x, attention_mask=x_mask, labels=y_true)
+        output = self.model(input_ids=x, 
+                            attention_mask=x_mask, 
+                            labels=y_true)
 
         loss = output.loss
 
-        self.log('train_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        self.log('train_loss', 
+                 loss, 
+                 on_step=True, 
+                 on_epoch=True, 
+                 prog_bar=True, 
+                 logger=True, 
+                 sync_dist=True)
+        
         return loss
 
     def validation_step(self, batch, batch_idx):
         x, x_mask, y_true = batch
 
-        output = self.model(input_ids=x, attention_mask=x_mask, labels=y_true)
+        output = self.model(input_ids=x, 
+                            attention_mask=x_mask, 
+                            labels=y_true)
+        
         val_loss = output.loss
         y_hat = output.logits
 
@@ -69,22 +85,24 @@ class Model(LightningModule):
             self.validation_step_outputs.append(decoded)
 
         perplexity = torch.exp(val_loss)
-        self.log('val_loss', val_loss, on_step=False, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
-        self.log('val_perplexity', perplexity, on_step=False, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
+        self.log('val_loss', 
+                 val_loss, 
+                 on_step=False, 
+                 on_epoch=True, 
+                 prog_bar=True, 
+                 logger=True, 
+                 sync_dist=True)
+        
+        self.log('val_perplexity', 
+                 perplexity, 
+                 on_step=False, 
+                 on_epoch=True, 
+                 prog_bar=True, 
+                 logger=True, 
+                 sync_dist=True)
             
         return val_loss
     
-    def test_step(self, batch, batch_idx):
-        x, x_mask, y_true = batch
-
-        output = self.model(input_ids=x, attention_mask=x_mask, labels=y_true)
-
-        loss = output.loss
-
-        self.log('test_loss', loss, on_step=True, on_epoch=True, prog_bar=True, logger=True, sync_dist=True)
-        
-        return loss
-
     def on_validation_epoch_end(self) -> None:
         if self.config.save_predictions_during_training == True:
             dir_path = Path(self.config.default_root_dir)
@@ -100,6 +118,77 @@ class Model(LightningModule):
                     f.write(str(item) + '\n')
 
             self.validation_step_outputs.clear()
+    
+    def on_test_start(self,):
+        # Create data structures to store predictions
+        self.y_trues = []
+        self.y_hats = []
+
+    # TODO: test this
+    def test_step(self, batch, batch_idx):
+        """
+        Test step for the model.
+
+        Log/save any metrics you want to test here.
+        """
+        x, x_mask, y_true = batch
+
+        output_ids = self.model.generate(input_ids=x, 
+                                    attention_mask=x_mask,
+                                    num_beams=5,
+                                    min_length=0,
+                                    max_new_tokens=self.config.max_gen_len)
+        
+        y_trues += self.tokenizer.decode(y_true.tolist())
+        y_hats += self.tokenizer.decode(output_ids.tolist())
+
+        loss = output_ids.loss
+
+        self.log('test_loss', 
+                 loss, on_step=True, 
+                 on_epoch=True, 
+                 prog_bar=True, 
+                 logger=True, 
+                 sync_dist=True)
+        
+        return loss
+    
+    def on_test_end(self):
+        # Save predictions
+        dir_path = Path(self.config.default_root_dir)
+        targets_path = dir_path / 'test_targets.txt'
+        predictions_path = dir_path / 'test_predictions.txt'
+
+        # Check if the directory exists. If not, create it
+        dir_path.mkdir(parents=True, exist_ok=True)
+
+        # Check if the file exists. If not, create it and append the outputs
+        with targets_path.open('a', encoding="utf-8") as f:
+            for item in self.y_trues:
+                f.write(str(item) + '\n')
+
+        with predictions_path.open('a', encoding="utf-8") as f:
+            for item in self.y_hats:
+                f.write(str(item) + '\n')
+                    
+        # Get chrf score
+        chrf = corpus_chrf(self.y_trues, self.y_hats)
+
+        # Get bleu score
+        bleu = corpus_bleu([[tgt] for tgt in self.y_trues], self.y_hats)
+
+        self.log('chrf', 
+                 chrf, 
+                 logger=True, 
+                 sync_dist=True)
+        self.log('bleu', 
+                 bleu,
+                 logger=True, 
+                 sync_dist=True)
+
+        scores = ['chrf: ' + str(chrf), 'bleu: ' + str(bleu)]
+
+        print('Final scores: ', scores)
     
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.config.lr)  # model.paramaters = weights tensor
