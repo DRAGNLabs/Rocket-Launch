@@ -43,7 +43,7 @@ There are a variety of workflow approaches for a framework such as this. In gene
 - Training a model on the tokenized data.
 - Running inference and/or generation with the trained model.
 
-## Setting up Rocket Llama
+## Setup
 
 ### Environment
 
@@ -80,6 +80,22 @@ This repository is designed to work with either HuggingFace tokenizers or Senten
 
 There are a number of methods for tokenizing data: it can be done in the preprocessing stage, or dynamically during training. See the docs on [tokenizing data](./docs/Tokenizing_Data.md) for more information.
 
+## Preparing Models
+
+This repository is designed to be work flexibly with any model architecture. By default, it uses models from the HuggingFace Transformers library. However, any PyTorch model code could be added and used with the PyTorch Lightning [Model](./src/lightning/model.py) class.
+
+### Using HuggingFace Models
+
+To prepare to train with a HuggingFace model, navigate to the PyTorch Lightning [model.py](./src/lightning/model.py) script. Import any necessary HuggingFace classes. Edit the `Model` class to use the proper config class, with the necessary parameters. This is highly dependent on the kind of model being used. If using a pretrained model, set the `from_pretrained` flag in the configuration YAML to `True`.
+
+#### Modifying Model Archiecture
+
+Many HuggingFace models encapsulate most of the necessary code into one Python file. As such, if you wish to modify architecture in any HuggingFace model, you may copy the model code from HuggingFace into a new Python file in this repository, make the necessary changes, and import that model file into the train script.
+
+### Using PyTorch Models
+
+Any PyTorch models can be added by simply adding a new model file, and instantiating the model object within the PyTorch Lightning [Model](./src/lightning/model.py) class.
+
 ## Training
 
 Before training, it may be desirable change the dataset processing in [dataset.py](./dataset.py). By default, the dataset class is padding each sequence in the batch. The best processing method is highly dependent on the data.
@@ -89,5 +105,3 @@ The [train.py](./train.py) takes as an argument a path to a config yaml file. Th
 ## Inference
 
 There are two scripts for inference: [generation.py](./src/generation.py), for generating text, and [inference.py](./src/inference.py), for running on a test set and computing metrics.
-
-## Modifying Models
