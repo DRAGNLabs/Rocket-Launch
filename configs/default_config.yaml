@@ -10,7 +10,7 @@ vocab_size: -1
 # Paths
 # default_root_dir is the root model training directory; checkpoints, predictions, and logs will be saved here.
 default_root_dir: PATH/TO/REPO/compute/runs/RUN/NAME/HERE
-# which checkpoint to use, if any, for resuming training or inference
+# Which checkpoint to use, if any, for resuming training or inference
 checkpoint_path: ~
 
 # Dataset
@@ -18,60 +18,68 @@ checkpoint_path: ~
 hf_dataset_name: wikitext
 hf_dataset_config: wikitext-2-v1
 
-# You may need to change filenames here if data came with split
+# Raw dataset file paths
+# You may need to change filenames here if data came with split.
 raw_train_path: PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME/train.csv
 raw_val_path: PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME/validation.csv
 raw_test_path: PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME/test.csv
 
 # Train/validation/test split proportions
+# These are used to split the raw dataset into train, validation, 
+# and test sets during the download process.
 splits:
   - 0.7
   - 0.2
   - 0.1
 
-# Dataset split, must be .pkl file
+# Tokenized dataset file paths
 train_path: PATH/TO/REPO/compute/dataset/tokenized/train.pkl
 val_path: PATH/TO/REPO/compute/dataset/tokenized/eval.pkl
 test_path: PATH/TO/REPO/compute/dataset/tokenized/test.pkl
 
-# GPU
-use_slurm: true
+# Device
 accelerator: gpu
-num_nodes: 1
 devices: 8
+num_nodes: 1
 num_workers: 0
+use_slurm: true
 
 # Train
-gradient_accumulation_steps: 1
-num_epochs: 10
-lr: 1.0e-4 
-gamma: 0.85
-seed: 42
+batch_size: 32
 early_stopping: 5
+gamma: 0.85
+gradient_accumulation_steps: 1
+lr: 1.0e-4 
+num_epochs: 10
+seed: 42
+
+# Saving/Logging
+check_val_every_n_epoch: 1
+log_every_n_steps: 200
 save_top_k: 3
 save_predictions_during_training: true
 val_check_interval: 0.2
-log_every_n_steps: 200
-check_val_every_n_epoch: 1
 
 # Inference
 generation_path: PATH/TO/REPO/compute/dataset/raw/inference_text.txt
 inference_dataset_path: PATH/TO/REPO/compute/dataset/tokenized/inference_data.pkl
 inference_output_path: ~
+
 max_gen_len: 50
+repetition_penalty: ~
 temperature: ~
 top_p: ~
-repetition_penalty: ~
 
 # Model
+# Depending on model being used, these may need to be changed/added onto.
 from_pretrained: false
 model_name: ~ # * Pretrained model name, if using pretrained model
-dim: 512
-n_layers: 8
-n_heads: 8
-multiple_of: 256  # * make SwiGLU hidden layer size multiple of large power of 2
-norm_eps: 1.0e-5
-batch_size: 32
-max_sequence_embeddings: 1024 # sequence_length
+
 dim_k: ~
 dim_v: ~
+dim: 512
+max_sequence_embeddings: 1024 # sequence_length
+multiple_of: 256  # * make SwiGLU hidden layer size multiple of large power of 2
+n_heads: 8
+n_layers: 8
+norm_eps: 1.0e-5
