@@ -64,14 +64,17 @@ def train_hf_tokenizer(config: Struct):
     tokenizer.save_pretrained(tokenizer_save_path)
     print('Finished!')
 
-if __name__ == '__main__':
+def main():
     args = sys.argv
     config_path = args[1]
 
     with open(config_path, 'r') as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
+        config = yaml.safe_load(f)
 
     # Convert args dict to object
     config = Struct(**config)
 
     train_hf_tokenizer(config)
+
+if __name__ == '__main__':
+    main()

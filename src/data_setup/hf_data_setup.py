@@ -54,8 +54,8 @@ class Struct:
         for key, value in self.__dict__.items():
             s += f"{key}: {value} \n"
         return s
-    
-if __name__ == '__main__':
+
+def main():
     args = sys.argv
     if len(args) != 2:
         print('Usage: python hf_data_setup.py <config_path>')
@@ -63,8 +63,11 @@ if __name__ == '__main__':
     config_path = args[1]
 
     with open(config_path, 'r') as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
+        config = yaml.safe_load(f)
 
     # Convert args dict to object
     config = Struct(**config)
     download(config)
+
+if __name__ == '__main__':
+    main()

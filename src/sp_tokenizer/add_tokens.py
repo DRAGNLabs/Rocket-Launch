@@ -1,3 +1,8 @@
+"""
+This script it outdated. However, it is a good example of 
+how to add tokens to a SentencePiece tokenizer.
+"""
+
 import sentencepiece as sp
 from sentencepiece import sentencepiece_model_pb2 as model
 

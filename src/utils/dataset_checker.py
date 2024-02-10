@@ -7,9 +7,8 @@ from torch.utils.data import DataLoader
 
 def main():
     """
-    Loads a dataset and prints the memory usage of the dataframe
-
-    Outdated
+    Loads a dataset and prints the memory usage of the dataframe.
+    This is outdated, but useful for understanding the structure of the dataset.
     """
     args = sys.argv
     config_path = args[1]
@@ -42,3 +41,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
