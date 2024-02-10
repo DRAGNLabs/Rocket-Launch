@@ -41,7 +41,7 @@ def inference(config):
 
     model.load_state_dict(checkpoint['state_dict'])
 
-    dm = DataModule(config)
+    dm = DataModule(config, tokenizer)
 
     # Train
     if not config.use_slurm:
