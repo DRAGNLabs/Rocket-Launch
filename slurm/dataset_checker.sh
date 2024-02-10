@@ -5,8 +5,7 @@
 #SBATCH --nodes=1   # number of nodes
 #SBATCH --mem=512G   # memory per CPU core
 #SBATCH --gres=gpu:1
-#SBATCH --qos=dw87
-#SBATCH -J "dataset_debug"   # job name
+#SBATCH -J "dataset_checker"   # job name
 #SBATCH --signal=SIGHUP@90
 #SBATCH --output=%x_%j.out
 
