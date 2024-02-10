@@ -23,6 +23,8 @@ def inference(config):
 
     csv_logger = CSVLogger(save_dir=config.default_root_dir, name='csv_logs')
 
+    tb_logger = TensorBoardLogger(save_dir=config.default_root_dir, name='tb_logs')
+
     # Load checkpoint
     checkpoint_path=config.checkpoint_path
 
@@ -45,7 +47,7 @@ def inference(config):
             max_epochs=config.num_epochs,
             accumulate_grad_batches=config.gradient_accumulation_steps,
             sync_batchnorm=True,
-            logger=csv_logger#,tb_logger]
+            logger=[csv_logger, tb_logger]
             )
     else:
         trainer = Trainer(
@@ -61,7 +63,7 @@ def inference(config):
             accumulate_grad_batches=config.gradient_accumulation_steps,
             sync_batchnorm=True,
             plugins=[SLURMEnvironment(requeue_signal=signal.SIGHUP)],
-            logger=csv_logger#,tb_logger]
+            logger=[csv_logger, tb_logger]
             )
     
     print("\nTesting model...")
