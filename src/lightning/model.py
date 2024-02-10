@@ -138,8 +138,8 @@ class Model(LightningModule):
                                     min_length=0,
                                     max_new_tokens=self.config.max_gen_len)
         
-        y_trues += self.tokenizer.decode(y_true.tolist())
-        y_hats += self.tokenizer.decode(output_ids.tolist())
+        self.y_trues += self.tokenizer.decode(y_true.tolist())
+        self.y_hats += self.tokenizer.decode(output_ids.tolist())
 
         loss = output_ids.loss
 
