@@ -124,7 +124,6 @@ class Model(LightningModule):
         self.y_trues = []
         self.y_hats = []
 
-    # TODO: test this
     def test_step(self, batch, batch_idx):
         """
         Test step for the model.
@@ -191,6 +190,6 @@ class Model(LightningModule):
         print('Final scores: ', scores)
     
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.config.lr)  # model.paramaters = weights tensor
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.config.lr)
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, self.config.gamma)
         return [optimizer], [lr_scheduler]

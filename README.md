@@ -105,3 +105,7 @@ The [train.py](./train.py) takes as an argument a path to a config yaml file. Th
 ## Inference
 
 There are two scripts for inference: [generation.py](./src/generation.py), for generating text, and [inference.py](./src/inference.py), for running on a test set and computing metrics.
+
+### inference.py
+
+For running the test set and gathering basic metrics, such as BLEU, [inference.py](./src/inference.py) can be run. To modify the metrics being gathered, modify the appropriate PyTorch Lightning hooks, such as `test_step()` and `on_test_end()`, in the [model.py](./src/lightning/model.py) script.

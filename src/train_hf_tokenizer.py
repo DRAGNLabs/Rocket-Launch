@@ -9,7 +9,10 @@ from tokenizers.trainers import BpeTrainer
 
 from utils.data_utils import Struct
 
-def main(config: Struct):
+def train_hf_tokenizer(config: Struct):
+    """
+    Modify this function to train a tokenizer using the HuggingFace tokenizers library.
+    """
     tokenizer = Tokenizer(BPE(unk_token="<unk>"))
 
     if config.vocab_size <= 0:
@@ -71,4 +74,4 @@ if __name__ == '__main__':
     # Convert args dict to object
     config = Struct(**config)
 
-    main(config)
+    train_hf_tokenizer(config)

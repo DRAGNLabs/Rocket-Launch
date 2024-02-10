@@ -1,10 +1,10 @@
 import os
 
 import pandas as pd
+from pytorch_lightning import LightningDataModule
 import torch
 from torch.utils.data import DataLoader
 from typing import List, Optional
-from pytorch_lightning import LightningDataModule
 
 class DataModule(LightningDataModule):
     def __init__(self, config, tokenizer):
