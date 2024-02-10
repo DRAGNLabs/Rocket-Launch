@@ -40,7 +40,7 @@ def train(config):
     model = Model(tokenizer=tokenizer, 
                   config=config)
 
-    dm = DataModule(config)
+    dm = DataModule(config, tokenizer)
 
     # callbacks
     early_stopping = EarlyStopping('val_loss', patience=config.early_stopping, mode='min', verbose=True)

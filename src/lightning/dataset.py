@@ -7,12 +7,12 @@ from typing import List, Optional
 from pytorch_lightning import LightningDataModule
 
 class DataModule(LightningDataModule):
-    def __init__(self, config):
+    def __init__(self, config, tokenizer):
         super().__init__()
         self.train_path = config.train_path
         self.val_path = config.val_path
         self.test_path = config.test_path
-        self.tokenizer = config.tokenizer
+        self.tokenizer = tokenizer
         self.tokenizer_type = config.tokenizer_type
         self.batch_size = config.batch_size
         self.max_sequence_embeddings = config.max_sequence_embeddings
