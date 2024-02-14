@@ -138,19 +138,8 @@ class Model(LightningModule):
                                     min_length=0,
                                     max_new_tokens=self.config.max_gen_len)
         
-        self.y_trues += self.tokenizer.decode(y_true.tolist())
-        self.y_hats += self.tokenizer.decode(output_ids.tolist())
-
-        loss = output_ids.loss
-
-        self.log('test_loss', 
-                 loss, on_step=True, 
-                 on_epoch=True, 
-                 prog_bar=True, 
-                 logger=True, 
-                 sync_dist=True)
-        
-        return loss
+        self.y_trues += self.tokenizer.batch_decode(y_true.tolist())
+        self.y_hats += self.tokenizer.batch_decode(output_ids.tolist())
     
     def on_test_end(self):
         # Save predictions
