@@ -141,7 +141,10 @@ class Model(LightningModule):
         self.y_trues += self.tokenizer.batch_decode(y_true.tolist())
         self.y_hats += self.tokenizer.batch_decode(output_ids.tolist())
     
-    def on_test_end(self):
+    def on_test_epoch_end(self):
+        """
+        Configure any metrics/output you want to save at the end of testing here.
+        """
         # Save predictions
         dir_path = Path(self.config.default_root_dir)
         targets_path = dir_path / 'test_targets.txt'
@@ -153,11 +156,11 @@ class Model(LightningModule):
         # Check if the file exists. If not, create it and append the outputs
         with targets_path.open('a', encoding="utf-8") as f:
             for item in self.y_trues:
-                f.write(str(item) + '\n')
+                f.write(item + '\n')
 
         with predictions_path.open('a', encoding="utf-8") as f:
             for item in self.y_hats:
-                f.write(str(item) + '\n')
+                f.write(item + '\n')
                     
         # Get chrf score
         chrf = corpus_chrf(self.y_trues, self.y_hats)
