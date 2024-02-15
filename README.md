@@ -109,3 +109,7 @@ There are two scripts for inference: [generation.py](./src/generation.py), for g
 ### inference.py
 
 For running the test set and gathering basic metrics, such as BLEU, [inference.py](./src/inference.py) can be run. To modify the metrics being gathered, modify the appropriate PyTorch Lightning hooks, such as `test_step()` and `on_test_end()`, in the [model.py](./src/lightning/model.py) script.
+
+### generation.py
+
+To use the model to generate text, [generation.py](./src/generation.py) can be run. Modify the `generation_path` parameter in the configuration to point to the file containing prompts to generate from.

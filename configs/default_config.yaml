@@ -67,9 +67,8 @@ save_predictions_during_training: true
 val_check_interval: 0.2
 
 # --- INFERENCE PARAMETERS ---
+# generation_path: Path to file containing text to generate from
 generation_path: PATH/TO/REPO/compute/dataset/raw/inference_text.txt
-inference_dataset_path: PATH/TO/REPO/compute/dataset/tokenized/inference_data.pkl
-inference_output_path: ~
 
 max_gen_len: 50
 repetition_penalty: ~
