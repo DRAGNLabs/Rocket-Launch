@@ -1,11 +1,13 @@
-from tqdm import tqdm
 import pandas as pd
 from pathlib import Path
 import sys
+from tqdm import tqdm
 import yaml
-from utils.data_utils import Struct
+
 from transformers import PreTrainedTokenizerFast as HFTokenizer
+
 from sp_tokenizer.tokenizer import Tokenizer as SPTokenizer
+from utils.data_utils import Struct
 
 def tokenize_data_chunk(tokenizer, chunk):  
     """
@@ -51,17 +53,9 @@ def generate_tokenized_file(raw_data_path, tokenizer_path, tokenizer_type):
     
     return df1
 
-def main():
+def tokenize_data(config: Struct):
     tqdm.pandas()
-    args = sys.argv
-    config_path = args[1]
-
-    with open(config_path, 'r') as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
-
-    # Convert args dict to object
-    config = Struct(**config)
-
+    
     print('\nStarting tokenization...\n')
 
     if config.raw_train_path and config.raw_test_path and config.raw_val_path:
@@ -70,9 +64,15 @@ def main():
         raw_val = config.raw_val_path
 
         # Generate tokenized file
-        tokenized_train:pd.DataFrame = generate_tokenized_file(raw_train, tokenizer_path=config.tokenizer_path, tokenizer_type=config.tokenizer_type)
-        tokenized_test:pd.DataFrame = generate_tokenized_file(raw_test, tokenizer_path=config.tokenizer_path, tokenizer_type=config.tokenizer_type)
-        tokenized_val:pd.DataFrame = generate_tokenized_file(raw_val, tokenizer_path=config.tokenizer_path, tokenizer_type=config.tokenizer_type)
+        tokenized_train:pd.DataFrame = generate_tokenized_file(raw_train, 
+                                                               tokenizer_path=config.tokenizer_path, 
+                                                               tokenizer_type=config.tokenizer_type)
+        tokenized_test:pd.DataFrame = generate_tokenized_file(raw_test, 
+                                                              tokenizer_path=config.tokenizer_path, 
+                                                              tokenizer_type=config.tokenizer_type)
+        tokenized_val:pd.DataFrame = generate_tokenized_file(raw_val, 
+                                                             tokenizer_path=config.tokenizer_path, 
+                                                             tokenizer_type=config.tokenizer_type)
 
         # Save train, validation, and test to pickle files
         out_dir_train = Path(config.train_path)
@@ -98,6 +98,18 @@ def main():
         print(f"# of tokenized prompts in test: {len(tokenized_test)}\n")
     else:
         raise ValueError("train, test, and val paths must be defined in order to tokenize data.")
+
+def main():
+    args = sys.argv
+    config_path = args[1]
+
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+
+    # Convert args dict to object
+    config = Struct(**config)
+
+    tokenize_data(config)
 
 if __name__== "__main__":
     main()

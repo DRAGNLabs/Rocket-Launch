@@ -1,17 +1,16 @@
-# Generation with a single string
-import sys
-import yaml
 import os
-import torch
+import sys
 from typing import List
+import yaml
+
+import torch
+from transformers import PreTrainedTokenizerFast as HFTokenizer
 
 from lightning.model import Model
-from transformers import PreTrainedTokenizerFast as HFTokenizer
 from sp_tokenizer.tokenizer import Tokenizer as SPTokenizer
 from utils.data_utils import Struct
 
 device = torch.device('cuda:0' if 'CUDA_VISIBLE_DEVICES' in os.environ else 'cpu')
-
 
 def generate(
     model,
@@ -22,6 +21,9 @@ def generate(
     top_p: float = 0.95,
     repetition_penalty: float = 1.0,
 ) -> List[str]:
+    """
+    This generation script is for generating text from a prompt using a trained model.
+    """
     
     if isinstance(tokenizer, SPTokenizer):
         prompt_tokens = torch.tensor(tokenizer.encode(prompt, bos=True, eos=False)).reshape(1,-1)
@@ -92,7 +94,7 @@ def main():
     config_path = args[1]
 
     with open(config_path, 'r') as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
+        config = yaml.safe_load(f)
 
     # Convert args dict to object
     config = Struct(**config)

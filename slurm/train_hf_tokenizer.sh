@@ -12,5 +12,4 @@ export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE
 
 # LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
 mamba activate rocket
-
 python3 ../src/train_hf_tokenizer.py ../configs/PATH_TO_CONFIG.yaml

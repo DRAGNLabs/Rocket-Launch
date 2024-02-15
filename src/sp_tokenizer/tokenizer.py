@@ -1,12 +1,14 @@
-import os
 from logging import getLogger
-from typing import List
+import os
 from sentencepiece import SentencePieceProcessor
-import pandas as pd
+from typing import List
 
 logger = getLogger()
 
 class Tokenizer:
+    """
+    Tokenizer class for SentencePiece tokenization
+    """
     def __init__(self, model_path):
         assert os.path.exists(model_path), model_path
 

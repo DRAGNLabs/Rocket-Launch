@@ -2,17 +2,17 @@ from pathlib import Path
 import sys
 import yaml
 
-from tokenizers import Tokenizer
+from transformers import PreTrainedTokenizerFast
+from tokenizers import Tokenizer, pre_tokenizers, processors, decoders
 from tokenizers.models import BPE
 from tokenizers.trainers import BpeTrainer
-from tokenizers import pre_tokenizers
-from tokenizers import processors
+
 from utils.data_utils import Struct
 
-from transformers import PreTrainedTokenizerFast
-from tokenizers import decoders
-
-def main(config: Struct):
+def train_hf_tokenizer(config: Struct):
+    """
+    Modify this function to train a tokenizer using the HuggingFace tokenizers library.
+    """
     tokenizer = Tokenizer(BPE(unk_token="<unk>"))
 
     if config.vocab_size <= 0:
@@ -64,14 +64,17 @@ def main(config: Struct):
     tokenizer.save_pretrained(tokenizer_save_path)
     print('Finished!')
 
-if __name__ == '__main__':
+def main():
     args = sys.argv
     config_path = args[1]
 
     with open(config_path, 'r') as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
+        config = yaml.safe_load(f)
 
     # Convert args dict to object
     config = Struct(**config)
 
-    main(config)
+    train_hf_tokenizer(config)
+
+if __name__ == '__main__':
+    main()

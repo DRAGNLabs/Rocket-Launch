@@ -1,9 +1,8 @@
-import datasets
-from datasets import load_dataset
-from datasets import DatasetDict
+from pathlib import Path
 import sys
 import yaml
-from pathlib import Path
+
+import datasets
 
 def download(config):
     """
@@ -18,7 +17,7 @@ def download(config):
 
     # Use split='all' to get all data and split yourself
     # Otherwise, datasets often come with a train, test, and validation split
-    dataset = load_dataset(
+    dataset = datasets.load_dataset(
         config.hf_dataset_name, 
         name=config.hf_dataset_config, 
         #split='all'
@@ -35,7 +34,7 @@ def download(config):
             validation_test = train_validation["test"].train_test_split(
                 train_size=config.splits[1] / (config.splits[1] + config.splits[2]),
                 seed=config.seed)
-            dataset = DatasetDict({
+            dataset = datasets.dataset_dict.DatasetDict({
                 "train": train_validation["train"],
                 "validation": validation_test["train"],
                 "test": validation_test["test"]})
@@ -55,8 +54,8 @@ class Struct:
         for key, value in self.__dict__.items():
             s += f"{key}: {value} \n"
         return s
-    
-if __name__ == '__main__':
+
+def main():
     args = sys.argv
     if len(args) != 2:
         print('Usage: python hf_data_setup.py <config_path>')
@@ -64,9 +63,11 @@ if __name__ == '__main__':
     config_path = args[1]
 
     with open(config_path, 'r') as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
+        config = yaml.safe_load(f)
 
     # Convert args dict to object
     config = Struct(**config)
     download(config)
 
+if __name__ == '__main__':
+    main()
