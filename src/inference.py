@@ -16,7 +16,7 @@ def inference(config):
     print('Beginning Inference')
     
     if config.tokenizer_type == 'hf':
-        tokenizer = HFTokenizer.from_pretrained(config.tokenizer_path)
+        tokenizer = HFTokenizer.from_pretrained(config.tokenizer_path, padding_size='left')
         config.pad_id = tokenizer.pad_token_id
     elif config.tokenizer_type == 'sp':
         tokenizer = SPTokenizer(config.tokenizer_path)
