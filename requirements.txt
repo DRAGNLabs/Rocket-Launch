@@ -28,6 +28,11 @@ cycler==0.12.1
     # via matplotlib
 datasets==2.15.0
     # via -r requirements.in
+dask==2024.3.0
+    # via
+    #   -r requirements.in
+dask-expr
+dask-ml
 dill==0.3.7
     # via
     #   datasets
