@@ -1,3 +1,4 @@
+from pathlib import Path
 import sys
 import signal
 import yaml
@@ -85,6 +86,17 @@ def train(config):
             sync_batchnorm=True,
             val_check_interval=config.val_check_interval,
             )
+        
+    if trainer.global_rank == 0:
+        # Write out config parameters to text file in run directory
+        # make file if it doesn't exist
+        config_path = Path(config.default_root_dir)
+        Path(config_path).mkdir(parents=True, exist_ok=True)
+        with open(config_path / "config.txt", "a") as f:
+            f.write(str(config))
+
+        # Print out config parameters in .out file
+        print(config)
         
     trainer.fit(model, datamodule=dm)
 
