@@ -23,10 +23,7 @@ hf_dataset_name: wikitext
 hf_dataset_config: wikitext-2-v1
 
 # Raw dataset file paths
-# You may need to change filenames here if data came with split from HF.
-raw_train_path: PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME/train.csv
-raw_val_path: PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME/validation.csv
-raw_test_path: PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME/test.csv
+raw_dataset_path: PATH/TO/REPO/compute/dataset/raw/DATA_DIRECTORY_NAME
 
 # Train/validation/test split proportions
 # These are used to split the raw dataset into train, validation, 
@@ -38,9 +35,7 @@ splits:
 
 # Tokenized dataset file paths
 # This can simply mirror the raw dataset paths
-train_path: PATH/TO/REPO/compute/dataset/tokenized/DATA_DIRECTORY_NAME/train.pkl
-val_path: PATH/TO/REPO/compute/dataset/tokenized/DATA_DIRECTORY_NAME/eval.pkl
-test_path: PATH/TO/REPO/compute/dataset/tokenized/DATA_DIRECTORY_NAME/test.pkl
+tokenized_dataset_path: PATH/TO/REPO/compute/dataset/tokenized/DATA_DIRECTORY_NAME
 
 # --- DEVICE ---
 accelerator: gpu
