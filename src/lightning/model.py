@@ -46,13 +46,7 @@ class Model(LightningModule):
         return self.model(**inputs)
     
     def training_step(self, batch, batch_idx):
-        x, x_mask, y_true = batch
-
-        output = self.model(input_ids=x, 
-                            attention_mask=x_mask, 
-                            labels=y_true)
-
-        loss = output.loss
+        loss, _ = self.step(batch)
 
         self.log('train_loss', 
                  loss, 
@@ -65,14 +59,7 @@ class Model(LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        x, x_mask, y_true = batch
-
-        output = self.model(input_ids=x, 
-                            attention_mask=x_mask, 
-                            labels=y_true)
-        
-        val_loss = output.loss
-        y_hat = output.logits
+        loss, y_hat = self.step(batch)
 
         if self.config.save_predictions_during_training:
             # Decode predictions and add to valuation predictions list
@@ -84,9 +71,9 @@ class Model(LightningModule):
 
             self.validation_step_outputs.append(decoded)
 
-        perplexity = torch.exp(val_loss)
+        perplexity = torch.exp(loss)
         self.log('val_loss', 
-                 val_loss, 
+                 loss, 
                  on_step=False, 
                  on_epoch=True, 
                  prog_bar=True, 
@@ -101,9 +88,10 @@ class Model(LightningModule):
                  logger=True, 
                  sync_dist=True)
             
-        return val_loss
+        return loss
     
     def on_validation_epoch_end(self) -> None:
+        # Save predictions if enabled
         if self.config.save_predictions_during_training == True:
             dir_path = Path(self.config.default_root_dir)
             file_path = dir_path / 'validation_predictions.txt'
@@ -180,8 +168,38 @@ class Model(LightningModule):
         scores = ['chrf: ' + str(chrf), 'bleu: ' + str(bleu)]
 
         print('Final scores: ', scores)
+
+    def step(self, batch):
+        """
+        Perform a forward pass and calculate loss.
+
+        The behaviour at this step depends on the model being used.
+        For instance, some HuggingFace models, such as Llama, will compute the shifted labels internally,
+        meaning labels should be equivalent to input_ids, after which the loss is calculated internally.
+
+        It's also possible to not pass labels, and compute the loss here instead.
+        """
+        x, x_mask, y_true = batch
+
+        output = self.model(input_ids=x, 
+                            attention_mask=x_mask, 
+                            labels=x)
+        
+        loss = output.loss
+        y_hat = output.logits
+
+        return loss, y_hat
     
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.config.lr)
         lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 1, self.config.gamma)
         return [optimizer], [lr_scheduler]
+    
+    def monitor_gpu_memory(self):
+        """
+        Monitor GPU memory usage. Useful for debugging, checking GPU utilization.
+        """
+        print("torch.cuda.memory_allocated: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024))
+        print("torch.cuda.memory_reserved: %fGB"%(torch.cuda.memory_reserved(0)/1024/1024/1024))
+        print("torch.cuda.max_memory_reserved: %fGB"%(torch.cuda.max_memory_reserved(0)/1024/1024/1024))
+
