@@ -1,11 +1,14 @@
-from pathlib import Path
+import dask
+dask.config.set({"dataframe.query-planning": True})
+import dask.dataframe as dd
 import sys
 import yaml
 
-from transformers import PreTrainedTokenizerFast
-from tokenizers import Tokenizer, pre_tokenizers, processors, decoders
+from pathlib import Path
+from tokenizers import decoders, pre_tokenizers, processors, Tokenizer
 from tokenizers.models import BPE
 from tokenizers.trainers import BpeTrainer
+from transformers import PreTrainedTokenizerFast
 
 from utils.data_utils import Struct
 
@@ -13,6 +16,15 @@ def train_hf_tokenizer(config: Struct):
     """
     Modify this function to train a tokenizer using the HuggingFace tokenizers library.
     """
+    print(f"Data dir: {config.raw_dataset_path}")
+    print("Loading dataset from disk")
+
+    train_dataset_path = Path(config.raw_dataset_path) / "train" / "*.parquet"
+
+    # Only load in train set, as that's all the tokenizer needs.
+    dataset = dd.read_parquet(path=train_dataset_path,
+                              columns=[str(config.dataset_feature)]).compute()
+    
     tokenizer = Tokenizer(BPE(unk_token="<unk>"))
 
     if config.vocab_size <= 0:
@@ -25,11 +37,12 @@ def train_hf_tokenizer(config: Struct):
     
     tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
 
-    print('Beginning training of tokenizer...')
-    if config.raw_train_path is not None:
-        tokenizer.train([config.raw_train_path], trainer)
-    else:
-        raise ValueError("Configuration parameter 'raw_train_path' must be defined in order to train HF tokenizer.")
+    print("Training tokenizer")
+    # Train tokenizer on only training data
+
+    tokenizer.train_from_iterator(
+        iter(dataset[config.dataset_feature]),
+        trainer=trainer)
 
     tokenizer.post_processor = processors.ByteLevel(trim_offsets=False)
 
