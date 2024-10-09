@@ -18,11 +18,11 @@ def split_data(config):
     dataset_dir.mkdir(parents=True, exist_ok=True)
 
     # Create folder to save the split datasets in
-    train_path = Path(config.raw_train_path)
+    train_path = dataset_dir / "train"
     train_path.mkdir(parents=True, exist_ok=True)
-    val_path = Path(config.raw_val_path)
+    val_path = dataset_dir / "validation"
     val_path.mkdir(parents=True, exist_ok=True)
-    test_path = Path(config.raw_test_path)
+    test_path = dataset_dir / "test"
     test_path.mkdir(parents=True, exist_ok=True)
 
     print("Loading data...")
